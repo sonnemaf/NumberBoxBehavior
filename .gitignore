@@ -3,3 +3,5 @@
 ################################################################################
 
 /.vs/NumberBoxDemo/v15
+/NumberBoxDemo/bin
+/NumberBoxDemo/obj

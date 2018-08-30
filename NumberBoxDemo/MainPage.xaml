@@ -1,0 +1,44 @@
+﻿<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:NumberBoxDemo"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:Custom="using:Microsoft.Xaml.Interactivity"
+      xmlns:Custom1="using:NumberBoxDemo.Behaviors"
+      x:Class="NumberBoxDemo.MainPage"
+      mc:Ignorable="d"
+      Language="en-GB"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Spacing="8"
+                    Margin="8">
+            <TextBox Text="12">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior Format="N0" />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBox Text="12.5">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior Format="C4" />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBox Text="15" Language="nl-NL">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior Format="C2" />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBox Text="0.0">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBox Text="">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBox Text="abc" />
+        </StackPanel>
+    </Grid>
+</Page>
