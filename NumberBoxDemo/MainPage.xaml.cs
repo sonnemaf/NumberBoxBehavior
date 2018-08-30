@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using NumberBoxDemo.ViewModels;
+using System.Diagnostics;
 using System.Globalization;
 using Windows.System;
 using Windows.UI.Core;
@@ -13,6 +14,9 @@ namespace NumberBoxDemo {
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainPage : Page {
+
+        internal MainViewModel VM { get; set; } = new MainViewModel();
+
         public MainPage() {
             this.InitializeComponent();
         }

@@ -15,7 +15,8 @@
                     Margin="8">
             <TextBox Text="12">
                 <Custom:Interaction.Behaviors>
-                    <Custom1:NumberBoxBehavior Format="N0" />
+                    <Custom1:NumberBoxBehavior Format="F0"
+                                               NumberStyles="Integer" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
             <TextBox Text="12.5">
@@ -23,7 +24,8 @@
                     <Custom1:NumberBoxBehavior Format="C4" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox Text="15" Language="nl-NL">
+            <TextBox Text="15"
+                     Language="nl-NL">
                 <Custom:Interaction.Behaviors>
                     <Custom1:NumberBoxBehavior Format="C2" />
                 </Custom:Interaction.Behaviors>
@@ -33,12 +35,13 @@
                     <Custom1:NumberBoxBehavior />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox Text="">
+            <TextBox>
                 <Custom:Interaction.Behaviors>
-                    <Custom1:NumberBoxBehavior />
+                    <Custom1:NumberBoxBehavior Value="{x:Bind VM.MyValue1, Mode=TwoWay}" Format="N" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox Text="abc" />
+            <TextBox Text="{x:Bind VM.MyValue1, Mode=OneWay}" />
+            <TextBox Text="abc" IsTextPredictionEnabled="True" IsSpellCheckEnabled="True" />
         </StackPanel>
     </Grid>
 </Page>

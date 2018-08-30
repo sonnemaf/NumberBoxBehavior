@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xaml.Interactivity;
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation.Metadata;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -12,6 +12,11 @@ namespace NumberBoxDemo.Behaviors {
     internal class NumberBoxBehavior : Behavior<TextBox> {
 
         private static string _clipboarText;
+
+        private bool _hasFocus;
+        // TODO: Dependency Property
+        public string Format { get; set; }
+        public NumberStyles NumberStyles { get; set; } = NumberStyles.Any;
 
         static NumberBoxBehavior() {
             Clipboard.ContentChanged += async (s, e) => {
@@ -24,21 +29,90 @@ namespace NumberBoxDemo.Behaviors {
             };
         }
 
+        #region Value Dependency Property
 
-        public string Format { get; set; }
-
-        protected override void OnAttached() {
-            this.AssociatedObject.IsSpellCheckEnabled = false;
-
-            base.OnAttached();
-            this.AssociatedObject.PreviewKeyDown += this.AssociatedObject_PreviewKeyDown;
-            this.AssociatedObject.Paste += this.AssociatedObject_Paste;
-            this.AssociatedObject.LostFocus += this.AssociatedObject_LostFocus;
+        /// <summary> 
+        /// Get or Sets the Value dependency property.  
+        /// </summary> 
+        public double? Value {
+            get { return (double?)this.GetValue(ValueProperty); }
+            set { this.SetValue(ValueProperty, value); }
         }
 
-        private void AssociatedObject_LostFocus(object sender, Windows.UI.Xaml.RoutedEventArgs e) {
+        /// <summary> 
+        /// Identifies the Value dependency property. This enables animation, styling, binding, etc...
+        /// </summary> 
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register(nameof(Value),
+                                        typeof(double?),
+                                        typeof(NumberBoxBehavior),
+                                        new PropertyMetadata(default(double?), OnValuePropertyChanged));
+
+        /// <summary>
+        /// Value changed handler. 
+        /// </summary>
+        /// <param name="d">NumberBoxBehavior that changed its Value.</param>
+        /// <param name="e">DependencyPropertyChangedEventArgs.</param> 
+        private static void OnValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            var source = d as NumberBoxBehavior;
+            if (source != null && !source._hasFocus) {
+                var value = (double?)e.NewValue;
+                var ci = source.GetCultureInfo();
+                if (value.HasValue) {
+                    source.AssociatedObject.Text = value.Value.ToString(source.Format, ci);
+                } else {
+                    source.AssociatedObject.Text = string.Empty;
+                }
+            }
+        }
+
+        #endregion Value Dependency Property
+
+        protected override void OnAttached() {
+            base.OnAttached();
+
+            // TODO: Turn SpellChecking off?
+            this.AssociatedObject.IsSpellCheckEnabled = false;
+
+            if (ApiInformation.IsEventPresent(typeof(UIElement).FullName, nameof(UIElement.PreviewKeyDown))) {
+                this.AssociatedObject.PreviewKeyDown += this.AssociatedObject_PreviewKeyDown;
+            }
+            if (ApiInformation.IsEventPresent(typeof(TextBox).FullName, nameof(TextBox.Paste))) {
+                this.AssociatedObject.Paste += this.AssociatedObject_Paste;
+            }
+            this.AssociatedObject.GotFocus += this.AssociatedObject_GotFocus;
+            this.AssociatedObject.LostFocus += this.AssociatedObject_LostFocus;
+            this.AssociatedObject.TextChanged += this.AssociatedObject_TextChanged;
+        }
+
+        protected override void OnDetaching() {
+            base.OnDetaching();
+            if (ApiInformation.IsEventPresent(typeof(UIElement).FullName, nameof(UIElement.PreviewKeyDown))) {
+                this.AssociatedObject.PreviewKeyDown -= this.AssociatedObject_PreviewKeyDown;
+            }
+            if (ApiInformation.IsEventPresent(typeof(TextBox).FullName, nameof(TextBox.Paste))) {
+                this.AssociatedObject.Paste -= this.AssociatedObject_Paste;
+            }
+            this.AssociatedObject.GotFocus -= this.AssociatedObject_GotFocus;
+            this.AssociatedObject.LostFocus -= this.AssociatedObject_LostFocus;
+            this.AssociatedObject.TextChanged -= this.AssociatedObject_TextChanged;
+        }
+
+        private void AssociatedObject_TextChanged(object sender, TextChangedEventArgs e) {
             var ci = GetCultureInfo();
-            if (double.TryParse(this.AssociatedObject.Text, NumberStyles.Currency, ci, out var v)) {
+            if (double.TryParse(this.AssociatedObject.Text, this.NumberStyles, ci, out var v)) {
+                this.Value = v;
+            } else {
+                this.Value = default(double?);
+            }
+        }
+
+        private void AssociatedObject_GotFocus(object sender, RoutedEventArgs e) => _hasFocus = true;
+
+        private void AssociatedObject_LostFocus(object sender, Windows.UI.Xaml.RoutedEventArgs e) {
+            _hasFocus = false;
+            var ci = GetCultureInfo();
+            if (double.TryParse(this.AssociatedObject.Text, this.NumberStyles, ci, out var v)) {
                 this.AssociatedObject.Text = v.ToString(this.Format, ci);
             }
         }
@@ -47,7 +121,7 @@ namespace NumberBoxDemo.Behaviors {
             if (_clipboarText != null) {
                 var newText = GetNewText(_clipboarText);
                 var ci = GetCultureInfo();
-                if (!double.TryParse(newText, NumberStyles.Currency, ci, out var v)) {
+                if (!double.TryParse(newText, this.NumberStyles, ci, out var v)) {
                     e.Handled = true;
                 }
             }
@@ -69,7 +143,7 @@ namespace NumberBoxDemo.Behaviors {
                 case (Windows.System.VirtualKey)189: // Minus
                     txt = "-";
                     break;
-                case VirtualKey.Decimal: 
+                case VirtualKey.Decimal:
                 case (Windows.System.VirtualKey)190: // Dot
                     txt = ".";
                     break;
@@ -224,7 +298,7 @@ namespace NumberBoxDemo.Behaviors {
             if (txt != null) {
                 var newText = GetNewText(txt);
                 var ci = GetCultureInfo();
-                if (!double.TryParse(newText, NumberStyles.Currency, ci, out _)) {
+                if (!double.TryParse(newText, this.NumberStyles, ci, out _)) {
                     e.Handled = true;
                 }
             }
@@ -243,11 +317,5 @@ namespace NumberBoxDemo.Behaviors {
             return this.AssociatedObject.Language != null ? CultureInfo.GetCultureInfo(this.AssociatedObject.Language) : CultureInfo.CurrentCulture;
         }
 
-        protected override void OnDetaching() {
-            base.OnDetaching();
-            this.AssociatedObject.PreviewKeyDown -= this.AssociatedObject_PreviewKeyDown;
-            this.AssociatedObject.Paste -= this.AssociatedObject_Paste;
-            this.AssociatedObject.LostFocus -= this.AssociatedObject_LostFocus;
-        }
     }
 }
