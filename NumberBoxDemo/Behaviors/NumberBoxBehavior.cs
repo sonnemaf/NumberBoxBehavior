@@ -12,11 +12,12 @@ namespace NumberBoxDemo.Behaviors {
     internal class NumberBoxBehavior : Behavior<TextBox> {
 
         private static string _clipboarText;
-
         private bool _hasFocus;
+
         // TODO: Dependency Property
         public string Format { get; set; }
         public NumberStyles NumberStyles { get; set; } = NumberStyles.Any;
+        public bool UpdateValueOnChange { get; set; }
 
         static NumberBoxBehavior() {
             Clipboard.ContentChanged += async (s, e) => {
@@ -82,7 +83,9 @@ namespace NumberBoxDemo.Behaviors {
             }
             this.AssociatedObject.GotFocus += this.AssociatedObject_GotFocus;
             this.AssociatedObject.LostFocus += this.AssociatedObject_LostFocus;
-            this.AssociatedObject.TextChanged += this.AssociatedObject_TextChanged;
+            if (UpdateValueOnChange) {
+                this.AssociatedObject.TextChanged += this.AssociatedObject_TextChanged;
+            }
         }
 
         protected override void OnDetaching() {
@@ -103,7 +106,16 @@ namespace NumberBoxDemo.Behaviors {
             if (double.TryParse(this.AssociatedObject.Text, this.NumberStyles, ci, out var v)) {
                 this.Value = v;
             } else {
-                this.Value = default(double?);
+                SetNullValue();
+            }
+        }
+
+        private void SetNullValue() {
+            try {
+                this.Value = null;
+            } catch (InvalidOperationException) {
+                // Value is DataBound to a non Nullable Value
+                this.Value = 0;
             }
         }
 
@@ -113,7 +125,13 @@ namespace NumberBoxDemo.Behaviors {
             _hasFocus = false;
             var ci = GetCultureInfo();
             if (double.TryParse(this.AssociatedObject.Text, this.NumberStyles, ci, out var v)) {
-                this.AssociatedObject.Text = v.ToString(this.Format, ci);
+                if (UpdateValueOnChange) {
+                    this.AssociatedObject.Text = v.ToString(this.Format, ci);
+                } else {
+                    this.Value = v;
+                }
+            } else {
+                SetNullValue();
             }
         }
 
@@ -313,9 +331,7 @@ namespace NumberBoxDemo.Behaviors {
             return newText;
         }
 
-        private CultureInfo GetCultureInfo() {
-            return this.AssociatedObject.Language != null ? CultureInfo.GetCultureInfo(this.AssociatedObject.Language) : CultureInfo.CurrentCulture;
-        }
+        private CultureInfo GetCultureInfo() => this.AssociatedObject.Language != null ? CultureInfo.GetCultureInfo(this.AssociatedObject.Language) : CultureInfo.CurrentCulture;
 
     }
 }

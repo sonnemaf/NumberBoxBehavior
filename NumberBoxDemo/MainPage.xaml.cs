@@ -1,11 +1,5 @@
 ﻿using NumberBoxDemo.ViewModels;
-using System.Diagnostics;
-using System.Globalization;
-using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -19,6 +13,18 @@ namespace NumberBoxDemo {
 
         public MainPage() {
             this.InitializeComponent();
+        }
+
+        public double? ToNullableDouble(int value) {
+            return new double?(value);
+        }
+
+        public int ToNullableInt(double? value) {
+            if (value.HasValue) {
+                var v = (int)value.Value;
+                return v;
+            }
+            return 0;
         }
     }
 }

@@ -10,6 +10,7 @@ namespace NumberBoxDemo.ViewModels {
 
         private double _myValue1 = 12.5;
         private double? _myValue2 = 16.8;
+        private int _myValue3 = 42;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -34,6 +35,16 @@ namespace NumberBoxDemo.ViewModels {
                 if (_myValue2 != value) {
                     _myValue2 = value;
                     OnPropertyChanged(nameof(MyValue2));
+                }
+            }
+        }
+
+        public int MyValue3 {
+            get { return _myValue3; }
+            set {
+                if (_myValue3 != value) {
+                    _myValue3 = value;
+                    OnPropertyChanged(nameof(MyValue3));
                 }
             }
         }

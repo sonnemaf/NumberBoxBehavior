@@ -6,42 +6,70 @@
       xmlns:Custom="using:Microsoft.Xaml.Interactivity"
       xmlns:Custom1="using:NumberBoxDemo.Behaviors"
       x:Class="NumberBoxDemo.MainPage"
+      xmlns:c="using:NumberBoxDemo.Converters"
       mc:Ignorable="d"
       Language="en-GB"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    <Page.Resources>
+        <c:IntToNullableDoubleConverter x:Key="IntToNullableDoubleConverter" />
+    </Page.Resources>
     <Grid>
         <StackPanel Spacing="8"
                     Margin="8">
-            <TextBox Text="12">
+            <TextBox Text="12" Header="Integer">
                 <Custom:Interaction.Behaviors>
                     <Custom1:NumberBoxBehavior Format="F0"
                                                NumberStyles="Integer" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox Text="12.5">
+            <TextBox Text="12.5" Header="Currency (UK), 4 decimals">
                 <Custom:Interaction.Behaviors>
                     <Custom1:NumberBoxBehavior Format="C4" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
             <TextBox Text="15"
-                     Language="nl-NL">
+                     Language="nl-NL"
+                     Header="Currency (Euro), 2 decimals">
                 <Custom:Interaction.Behaviors>
                     <Custom1:NumberBoxBehavior Format="C2" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox Text="0.0">
+            <TextBox Text="1234"
+                     Header="Any number">
                 <Custom:Interaction.Behaviors>
                     <Custom1:NumberBoxBehavior />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox>
+            <TextBox Header="DataBinding to Double">
                 <Custom:Interaction.Behaviors>
-                    <Custom1:NumberBoxBehavior Value="{x:Bind VM.MyValue1, Mode=TwoWay}" Format="N" />
+                    <Custom1:NumberBoxBehavior Format="C2"
+                                               UpdateValueOnChange="True"
+                                               Value="{x:Bind VM.MyValue1, Mode=TwoWay}" />
                 </Custom:Interaction.Behaviors>
             </TextBox>
-            <TextBox Text="{x:Bind VM.MyValue1, Mode=OneWay}" />
-            <TextBox Text="abc" IsTextPredictionEnabled="True" IsSpellCheckEnabled="True" />
+            <TextBlock Text="{x:Bind VM.MyValue1, Mode=OneWay}" />
+            <TextBox Header="DataBinding to Double?">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior Format="C2"
+                                               Value="{x:Bind VM.MyValue2, Mode=TwoWay}" />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBlock Text="{x:Bind VM.MyValue2, Mode=OneWay}" />
+
+            <TextBox Header="DataBinding to Int">
+                <Custom:Interaction.Behaviors>
+                    <Custom1:NumberBoxBehavior Format="F0"
+                                               NumberStyles="Integer"
+                                               Value="{x:Bind VM.MyValue3, Converter={StaticResource IntToNullableDoubleConverter}, Mode=TwoWay}" />
+                </Custom:Interaction.Behaviors>
+            </TextBox>
+            <TextBlock Text="{x:Bind VM.MyValue3, Mode=OneWay}" />
+
+
+            <TextBox Text="abc"
+                     Header="Normal TextBox"
+                     IsTextPredictionEnabled="True"
+                     IsSpellCheckEnabled="True" />
         </StackPanel>
     </Grid>
 </Page>
